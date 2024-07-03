@@ -4,14 +4,23 @@ pub struct Token {
     lexeme: String,
 }
 
+pub type TT = TokenType;
+
 #[derive(PartialEq, Debug)]
 pub enum TokenType {
     Plus,
+    Assign,
+    LBrace,
+    RBrace,
+    LParen,
+    RParen,
+    Coma,
+    Semicolon,
     EOF
 }
 
 impl Token {
-    pub fn new(ttype: TokenType, lexeme: String) -> Self {
+    pub fn new(ttype: TT, lexeme: String) -> Self {
         Self {
             ttype, 
             lexeme
