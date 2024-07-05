@@ -16,25 +16,26 @@ pub enum TokenType {
     RParen,
     Coma,
     Semicolon,
-    Eof
+    Identifier,
+    Let,
+    Literal,
+    Function,
+    Eof,
+    IllegalToken,
 }
 
 impl Token {
     pub fn new(ttype: TT, lexeme: String) -> Self {
-        Self {
-            ttype, 
-            lexeme
-        }
+        Self { ttype, lexeme }
     }
 
     pub fn eof() -> Self {
         Self {
             ttype: TokenType::Eof,
-            lexeme: "".to_string()
+            lexeme: "".to_string(),
         }
     }
     pub fn from_str(ttype: TT, lexeme: &str) -> Self {
         Self::new(ttype, lexeme.to_string())
     }
 }
-

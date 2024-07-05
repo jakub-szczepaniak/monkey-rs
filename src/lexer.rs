@@ -1,43 +1,113 @@
+use std::collections;
+
 use crate::token::*;
 
 pub struct Lexer {
     input: Vec<char>,
     start: usize,
     current: usize,
-
-
 }
 
 impl Lexer {
-    pub fn new(input:&str) -> Self {
-        Self { 
+    pub fn new(input: &str) -> Self {
+        Self {
             input: input.chars().collect(),
             start: 0,
-            current: 0 
+            current: 0,
         }
     }
 
     pub fn next_token(&mut self) -> Token {
         if !self.is_at_end() {
-           let ch = self.advance();
-           match ch {
-            '+' => return Token::new(TT::Plus, format!("{}", ch)),
-            '=' => return Token::new(TT::Assign, format!("{}", ch)),
-            '(' => return Token::new(TT::LParen, format!("{}", ch)),
-            ')' => return Token::new(TT::RParen, format!("{}", ch)),
-            '{' => return Token::new(TT::LBrace, format!("{}", ch)),
-            '}' => return Token::new(TT::RBrace, format!("{}", ch)),
-            ',' => return Token::new(TT::Coma, format!("{}", ch)),
-            ';' => return Token::new(TT::Semicolon, format!("{}", ch)),
-            _ => return Token::new(TT::Plus, format!("{}", ch)),
-
-           }
+            self.skip_whitespace();
+            let ch = self.advance();
+            match ch {
+                '+' => return Token::new(TT::Plus, format!("{}", ch)),
+                '=' => return Token::new(TT::Assign, format!("{}", ch)),
+                '(' => return Token::new(TT::LParen, format!("{}", ch)),
+                ')' => return Token::new(TT::RParen, format!("{}", ch)),
+                '{' => return Token::new(TT::LBrace, format!("{}", ch)),
+                '}' => return Token::new(TT::RBrace, format!("{}", ch)),
+                ',' => return Token::new(TT::Coma, format!("{}", ch)),
+                ';' => return Token::new(TT::Semicolon, format!("{}", ch)),
+                _ => {
+                    if self.is_letter(Some(ch)) {
+                        let identifier = self.read_identifier();
+                        match identifier.as_str() {
+                            "fn" => return Token::new(TT::Function, identifier),
+                            "let" => return Token::new(TT::Let, identifier),
+                            _ => return Token::new(TT::Identifier, identifier),
+                        }
+                    } else if self.is_digit(Some(ch)) {
+                        let literal = self.read_number();
+                        return Token::new(TT::Literal, literal);
+                    } else {
+                        return Token::new(TT::IllegalToken, format!("{}", ch));
+                    }
+                }
+            }
         }
-       Token::eof()
+        Token::eof()
     }
 
-    fn is_at_end(&self) -> bool { 
+    fn is_at_end(&self) -> bool {
         self.current >= self.input.len()
+    }
+
+    fn is_letter(&self, ch: Option<char>) -> bool {
+        match ch {
+            Some(ch) => ch.is_ascii_alphabetic() || ch == '_',
+            None => false,
+        }
+    }
+
+    fn is_digit(&self, ch: Option<char>) -> bool {
+        match ch {
+            Some(ch) => ch.is_digit(10),
+            None => false
+        }
+    }
+
+
+    fn is_whitespace(&self, ch: Option<char>) -> bool {
+        match ch {
+            Some(c) => c.is_whitespace(),
+            None => false
+        }
+    }
+
+    fn skip_whitespace(&mut self) {
+        while self.is_whitespace(self.peek()) {
+            self.advance();
+        }
+    }
+
+    fn read_identifier(&mut self) -> String {
+        let start = self.current - 1;
+        while self.is_letter(self.peek()) {
+            self.advance();
+        }
+        self.input[start..self.current]
+            .iter()
+            .collect::<Vec<&char>>()
+            .into_iter()
+            .collect()
+    }
+
+    fn read_number(&mut self) -> String { 
+        let start = self.current - 1;
+        while self.is_digit(self.peek()) {
+            self.advance();
+        }
+        self.input[start..self.current]
+            .iter()
+            .collect::<Vec<&char>>()
+            .into_iter()
+            .collect()
+    }
+
+    fn peek(&self) -> Option<char> {
+        self.input.get(self.current).copied()
     }
 
     fn advance(&mut self) -> char {
@@ -46,9 +116,6 @@ impl Lexer {
         result
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
@@ -73,18 +140,74 @@ mod tests {
     #[rstest]
     fn test_multiple_tokens() {
         let mut lexer = Lexer::new("=+(){},;");
-        let expected = vec![Token::from_str(TT::Assign,"="),
-        Token::from_str(TT::Plus, "+"),
-        Token::from_str(TT::LParen, "("),
-        Token::from_str(TT::RParen, ")"),
-        Token::from_str(TT::LBrace, "{"),
-        Token::from_str(TT::RBrace, "}"),
-        Token::from_str(TT::Coma, ","),
-        Token::from_str(TT::Semicolon, ";"),
-        Token::from_str(TT::Eof, ""),
+        let expected = vec![
+            Token::from_str(TT::Assign, "="),
+            Token::from_str(TT::Plus, "+"),
+            Token::from_str(TT::LParen, "("),
+            Token::from_str(TT::RParen, ")"),
+            Token::from_str(TT::LBrace, "{"),
+            Token::from_str(TT::RBrace, "}"),
+            Token::from_str(TT::Coma, ","),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Eof, ""),
         ];
 
-        for exp in &expected { 
+        for exp in &expected {
+            let token = lexer.next_token();
+            assert_eq!(token, *exp)
+        }
+    }
+
+    #[rstest]
+    fn test_simple_program() {
+        let input: &str = r#"let five = 5;
+let ten = 10;
+let add = fn(x, y) {
+    x+y;
+}
+let result = add(five, ten);"#;
+        let mut lexer = Lexer::new(input);
+
+        let expected = vec![
+            Token::from_str(TT::Let, "let"),
+            Token::from_str(TT::Identifier, "five"),
+            Token::from_str(TT::Assign, "="),
+            Token::from_str(TT::Literal, "5"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Let, "let"),
+            Token::from_str(TT::Identifier, "ten"),
+            Token::from_str(TT::Assign, "="),
+            Token::from_str(TT::Literal, "10"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Let, "let"),
+            Token::from_str(TT::Identifier, "add"),
+            Token::from_str(TT::Assign, "="),
+            Token::from_str(TT::Function, "fn"),
+            Token::from_str(TT::LParen, "("),
+            Token::from_str(TT::Identifier, "x"),
+            Token::from_str(TT::Coma, ","),
+            Token::from_str(TT::Identifier, "y"),
+            Token::from_str(TT::RParen, ")"),
+            Token::from_str(TT::LBrace, "{"),
+            Token::from_str(TT::Identifier, "x"),
+            Token::from_str(TT::Plus, "+"),
+            Token::from_str(TT::Identifier, "y"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::RBrace, "}"),
+            Token::from_str(TT::Let, "let"),
+            Token::from_str(TT::Identifier, "result"),
+            Token::from_str(TT::Assign, "="),
+            Token::from_str(TT::Identifier, "add"),
+            Token::from_str(TT::LParen, "("),
+            Token::from_str(TT::Identifier, "five"),
+            Token::from_str(TT::Coma, ","),
+            Token::from_str(TT::Identifier, "ten"),
+            Token::from_str(TT::RParen, ")"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Eof, ""),
+        ];
+
+        for exp in &expected {
             let token = lexer.next_token();
             assert_eq!(token, *exp)
         }
