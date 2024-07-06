@@ -29,6 +29,12 @@ impl Lexer {
                 '{' => return Token::new(TT::LBrace, format!("{}", ch)),
                 '}' => return Token::new(TT::RBrace, format!("{}", ch)),
                 ',' => return Token::new(TT::Coma, format!("{}", ch)),
+                '!' => return Token::new(TT::Bang, format!("{}", ch)),
+                '-' => return Token::new(TT::Minus, format!("{}", ch)),
+                '/' => return Token::new(TT::Slash, format!("{}", ch)),
+                '*' => return Token::new(TT::Star, format!("{}", ch)),
+                '<' => return Token::new(TT::Less, format!("{}", ch)),
+                '>' => return Token::new(TT::Greater, format!("{}", ch)),
                 ';' => return Token::new(TT::Semicolon, format!("{}", ch)),
                 _ => {
                     if self.is_letter(Some(ch)) {
@@ -36,6 +42,11 @@ impl Lexer {
                         match identifier.as_str() {
                             "fn" => return Token::new(TT::Function, identifier),
                             "let" => return Token::new(TT::Let, identifier),
+                            "if" => return Token::new(TT::If, identifier),
+                            "else" => return Token::new(TT::Else, identifier),
+                            "return" => return Token::new(TT::Return, identifier),
+                            "true" => return Token::new(TT::True, identifier),
+                            "false" => return Token::new(TT::False, identifier),
                             _ => return Token::new(TT::Identifier, identifier),
                         }
                     } else if self.is_digit(Some(ch)) {
@@ -165,7 +176,14 @@ let ten = 10;
 let add = fn(x, y) {
     x+y;
 }
-let result = add(five, ten);"#;
+let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
+if (5<10) {
+    return true;
+    } else {
+    return false;
+}"#;
         let mut lexer = Lexer::new(input);
 
         let expected = vec![
@@ -204,6 +222,35 @@ let result = add(five, ten);"#;
             Token::from_str(TT::Identifier, "ten"),
             Token::from_str(TT::RParen, ")"),
             Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Bang, "!"),
+            Token::from_str(TT::Minus, "-"),
+            Token::from_str(TT::Slash, "/"),
+            Token::from_str(TT::Star, "*"),
+            Token::from_str(TT::Literal, "5"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Literal, "5"),
+            Token::from_str(TT::Less, "<"),
+            Token::from_str(TT::Literal, "10"),
+            Token::from_str(TT::Greater, ">"),
+            Token::from_str(TT::Literal, "5"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::If, "if"),
+            Token::from_str(TT::LParen, "("),
+            Token::from_str(TT::Literal, "5"),
+            Token::from_str(TT::Less, "<"),
+            Token::from_str(TT::Literal, "10"),
+            Token::from_str(TT::RParen, ")"),
+            Token::from_str(TT::LBrace, "{"),
+            Token::from_str(TT::Return, "return"),
+            Token::from_str(TT::True, "true"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::RBrace, "}"),
+            Token::from_str(TT::Else, "else"),
+            Token::from_str(TT::LBrace, "{"),
+            Token::from_str(TT::Return, "return"),
+            Token::from_str(TT::False, "false"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::RBrace, "}"),
             Token::from_str(TT::Eof, ""),
         ];
 
