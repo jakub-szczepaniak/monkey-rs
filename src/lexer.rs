@@ -23,18 +23,54 @@ impl Lexer {
             let ch = self.advance();
             match ch {
                 '+' => return Token::new(TT::Plus, format!("{}", ch)),
-                '=' => return Token::new(TT::Assign, format!("{}", ch)),
+                '=' => {
+                    let _ = match self.peek() {
+                        Some(v) => {
+                            if v == '=' {
+                                self.advance();
+                                return Token::new(TT::Equal, "==".to_string());
+                            } else {
+                                return Token::new(TT::Assign, "=".to_string());
+                            }
+                        }
+                        None => return Token::new(TT::Assign, "=".to_string()),
+                    };
+                }
                 '(' => return Token::new(TT::LParen, format!("{}", ch)),
                 ')' => return Token::new(TT::RParen, format!("{}", ch)),
                 '{' => return Token::new(TT::LBrace, format!("{}", ch)),
                 '}' => return Token::new(TT::RBrace, format!("{}", ch)),
                 ',' => return Token::new(TT::Coma, format!("{}", ch)),
-                '!' => return Token::new(TT::Bang, format!("{}", ch)),
+                '!' => {
+                    let next = self.peek().unwrap();
+                    if next == '=' {
+                        self.advance();
+                        return Token::new(TT::BangEqual, "!=".to_string());
+                    } else {
+                        return Token::new(TT::Bang, format!("{}", ch));
+                    }
+                }
                 '-' => return Token::new(TT::Minus, format!("{}", ch)),
                 '/' => return Token::new(TT::Slash, format!("{}", ch)),
                 '*' => return Token::new(TT::Star, format!("{}", ch)),
-                '<' => return Token::new(TT::Less, format!("{}", ch)),
-                '>' => return Token::new(TT::Greater, format!("{}", ch)),
+                '<' => {
+                    let next = self.peek().unwrap();
+                    if next == '=' {
+                        self.advance();
+                        return Token::new(TT::LessEqual, "<=".to_string());
+                    } else {
+                        return Token::new(TT::Less, "<".to_string());
+                    }
+                }
+                '>' => {
+                    let next = self.peek().unwrap();
+                    if next == '=' {
+                        self.advance();
+                        return Token::new(TT::GreaterEqual, ">=".to_string());
+                    } else {
+                        return Token::new(TT::Greater, format!("{}", ch));
+                    }
+                }
                 ';' => return Token::new(TT::Semicolon, format!("{}", ch)),
                 _ => {
                     if self.is_letter(Some(ch)) {
@@ -75,15 +111,14 @@ impl Lexer {
     fn is_digit(&self, ch: Option<char>) -> bool {
         match ch {
             Some(ch) => ch.is_digit(10),
-            None => false
+            None => false,
         }
     }
-
 
     fn is_whitespace(&self, ch: Option<char>) -> bool {
         match ch {
             Some(c) => c.is_whitespace(),
-            None => false
+            None => false,
         }
     }
 
@@ -105,7 +140,7 @@ impl Lexer {
             .collect()
     }
 
-    fn read_number(&mut self) -> String { 
+    fn read_number(&mut self) -> String {
         let start = self.current - 1;
         while self.is_digit(self.peek()) {
             self.advance();
@@ -183,7 +218,11 @@ if (5<10) {
     return true;
     } else {
     return false;
-}"#;
+}
+10==10;
+10!=9;
+5>=4;
+5<=6;"#;
         let mut lexer = Lexer::new(input);
 
         let expected = vec![
@@ -251,6 +290,22 @@ if (5<10) {
             Token::from_str(TT::False, "false"),
             Token::from_str(TT::Semicolon, ";"),
             Token::from_str(TT::RBrace, "}"),
+            Token::from_str(TT::Literal, "10"),
+            Token::from_str(TT::Equal, "=="),
+            Token::from_str(TT::Literal, "10"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Literal, "10"),
+            Token::from_str(TT::BangEqual, "!="),
+            Token::from_str(TT::Literal, "9"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Literal, "5"),
+            Token::from_str(TT::GreaterEqual, ">="),
+            Token::from_str(TT::Literal, "4"),
+            Token::from_str(TT::Semicolon, ";"),
+            Token::from_str(TT::Literal, "5"),
+            Token::from_str(TT::LessEqual, "<="),
+            Token::from_str(TT::Literal, "6"),
+            Token::from_str(TT::Semicolon, ";"),
             Token::from_str(TT::Eof, ""),
         ];
 

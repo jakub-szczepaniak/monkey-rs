@@ -10,6 +10,8 @@ pub type TT = TokenType;
 pub enum TokenType {
     Plus,
     Assign,
+    Equal,
+    BangEqual,
     LBrace,
     RBrace,
     LParen,
@@ -21,7 +23,9 @@ pub enum TokenType {
     Literal,
     Function,
     Less,
+    LessEqual,
     Greater,
+    GreaterEqual,
     Slash,
     Star,
     Minus,
