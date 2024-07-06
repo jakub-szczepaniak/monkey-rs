@@ -1,13 +1,16 @@
-use std::{io::{self, BufRead, Write}, path::PathBuf};
+use std::{
+    io::{self, BufRead, Write},
+    path::PathBuf,
+};
 
+use clap::Parser;
 use lexer::Lexer;
 use monkey_rs::*;
-use clap::Parser;
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
 struct Cli {
-    filename: Option<PathBuf>
+    filename: Option<PathBuf>,
 }
 
 fn main() {
@@ -26,7 +29,6 @@ fn repl() {
     print!("Monkey>>");
     let _ = io::stdout().flush();
     for line in stdin.lock().lines() {
-        
         if let Ok(line) = line {
             if line.is_empty() {
                 break;
@@ -37,8 +39,8 @@ fn repl() {
                 if token.is_eof() || token.is_illegal() {
                     break;
                 }
-                println!("{}",token);
-            } 
+                println!("{}", token);
+            }
         }
         print!(">>");
         let _ = io::stdout().flush();
