@@ -1,5 +1,3 @@
-use std::collections;
-
 use crate::token::*;
 
 pub struct Lexer {
@@ -24,7 +22,7 @@ impl Lexer {
             match ch {
                 '+' => return Token::new(TT::Plus, format!("{}", ch)),
                 '=' => {
-                    let _ = match self.peek() {
+                    match self.peek() {
                         Some(v) => {
                             if v == '=' {
                                 self.advance();
@@ -110,7 +108,7 @@ impl Lexer {
 
     fn is_digit(&self, ch: Option<char>) -> bool {
         match ch {
-            Some(ch) => ch.is_digit(10),
+            Some(ch) => ch.is_ascii_digit(),
             None => false,
         }
     }
@@ -129,11 +127,11 @@ impl Lexer {
     }
 
     fn read_identifier(&mut self) -> String {
-        let start = self.current - 1;
+        self.start = self.current - 1;
         while self.is_letter(self.peek()) {
             self.advance();
         }
-        self.input[start..self.current]
+        self.input[self.start..self.current]
             .iter()
             .collect::<Vec<&char>>()
             .into_iter()
@@ -141,11 +139,11 @@ impl Lexer {
     }
 
     fn read_number(&mut self) -> String {
-        let start = self.current - 1;
+        self.start = self.current - 1;
         while self.is_digit(self.peek()) {
             self.advance();
         }
-        self.input[start..self.current]
+        self.input[self.start..self.current]
             .iter()
             .collect::<Vec<&char>>()
             .into_iter()

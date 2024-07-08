@@ -43,7 +43,16 @@ pub enum TokenType {
 
 impl Display for TokenType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "hell")
+        match self {
+            TT::Assign => write!(f, "TokenAssign"),
+            TT::Bang => write!(f, "TokenBang"),
+            TT::BangEqual => write!(f, "TokenNotEqual"),
+            TT::Coma => write!(f, "TokenComa"),
+            TT::Else => write!(f, "TokenElse"),
+            TT::Eof => write!(f, "TokenEOF"),
+            TT::Equal => write!(f, "TEqual"),
+            _ => todo!(),
+        }
     }
 }
 

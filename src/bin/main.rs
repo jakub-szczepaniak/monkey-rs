@@ -1,18 +1,21 @@
-use std::{io::{self, BufRead, Write}, path::PathBuf};
+use std::{
+    io::{self, BufRead, Write},
+    path::PathBuf,
+};
 
-use monkey_rs::*;
 use clap::Parser;
+use monkey_rs::*;
 
 #[derive(Parser)]
 #[command(version, about, long_about=None)]
 struct Cli {
-    filename: Option<PathBuf>
+    filename: Option<PathBuf>,
 }
 
 fn main() {
     println!("Hello!");
     let cli = Cli::parse();
-    if let Some(filename) = cli.filename {
+    if let Some(_filename) = cli.filename {
         todo!("Not there yet");
     } else {
         println!("Starting Monkey REPL");
@@ -25,7 +28,6 @@ fn repl() {
     print!("Monkey>>");
     let _ = io::stdout().flush();
     for line in stdin.lock().lines() {
-        
         if let Ok(line) = line {
             if line.is_empty() {
                 break;
@@ -36,8 +38,8 @@ fn repl() {
                 if token.is_eof() || token.is_illegal() {
                     break;
                 }
-                println!("{}",token);
-            } 
+                println!("{}", token);
+            }
         }
         print!(">>");
         let _ = io::stdout().flush();
