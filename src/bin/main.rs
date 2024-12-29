@@ -13,7 +13,6 @@ struct Cli {
 }
 
 fn main() {
-    println!("Hello!");
     let cli = Cli::parse();
     if let Some(_filename) = cli.filename {
         todo!("Not there yet");

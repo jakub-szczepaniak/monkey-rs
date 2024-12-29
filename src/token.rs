@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{write, Display};
 
 #[derive(Debug, PartialEq)]
 pub struct Token {
@@ -51,6 +51,20 @@ impl Display for TokenType {
             TT::Else => write!(f, "TokenElse"),
             TT::Eof => write!(f, "TokenEOF"),
             TT::Equal => write!(f, "TEqual"),
+            TT::False => write!(f, "TFalse"),
+            TT::Function => write!(f, "TFunction"),
+            TT::Greater => write!(f, "TGreater"),
+            TT::GreaterEqual => write!(f, "TGreaterEqual"),
+            TT::Identifier => write!(f, "TIdentifier"),
+            TT::If => write!(f, "TIf"),
+            TT::IllegalToken => write!(f, "TIllegalToken"),
+            TT::LBrace => write!(f, "TLBrace"),
+            TT::LParen => write!(f, "TLParen"),
+            TT::Less => write!(f, "TLess"),
+            TT::LessEqual => write!(f, "TLessEqual"),
+            TT::Let => write!(f, "TLet"),
+            TT::Literal => write!(f, "TLiteral"),
+            TT::Minus => write!(f, "TMinus"),
             _ => todo!(),
         }
     }

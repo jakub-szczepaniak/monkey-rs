@@ -39,36 +39,42 @@ impl Lexer {
                 '{' => return Token::new(TT::LBrace, format!("{}", ch)),
                 '}' => return Token::new(TT::RBrace, format!("{}", ch)),
                 ',' => return Token::new(TT::Coma, format!("{}", ch)),
-                '!' => {
-                    let next = self.peek().unwrap();
-                    if next == '=' {
-                        self.advance();
-                        return Token::new(TT::BangEqual, "!=".to_string());
-                    } else {
-                        return Token::new(TT::Bang, format!("{}", ch));
+                '!' => match self.peek() {
+                    Some(v) => {
+                        if v == '=' {
+                            self.advance();
+                            return Token::new(TT::BangEqual, "!=".to_string());
+                        } else {
+                            return Token::new(TT::Bang, "!".to_string());
+                        }
                     }
-                }
+                    None => return Token::new(TT::Bang, "!".to_string()),
+                },
                 '-' => return Token::new(TT::Minus, format!("{}", ch)),
                 '/' => return Token::new(TT::Slash, format!("{}", ch)),
                 '*' => return Token::new(TT::Star, format!("{}", ch)),
-                '<' => {
-                    let next = self.peek().unwrap();
-                    if next == '=' {
-                        self.advance();
-                        return Token::new(TT::LessEqual, "<=".to_string());
-                    } else {
-                        return Token::new(TT::Less, "<".to_string());
+                '<' => match self.peek() {
+                    Some(v) => {
+                        if v == '=' {
+                            self.advance();
+                            return Token::new(TT::LessEqual, "<=".to_string());
+                        } else {
+                            return Token::new(TT::Less, "<".to_string());
+                        }
                     }
-                }
-                '>' => {
-                    let next = self.peek().unwrap();
-                    if next == '=' {
-                        self.advance();
-                        return Token::new(TT::GreaterEqual, ">=".to_string());
-                    } else {
-                        return Token::new(TT::Greater, format!("{}", ch));
+                    None => return Token::new(TT::Less, "<".to_string()),
+                },
+                '>' => match self.peek() {
+                    Some(v) => {
+                        if v == '=' {
+                            self.advance();
+                            return Token::new(TT::GreaterEqual, ">=".to_string());
+                        } else {
+                            return Token::new(TT::Greater, ">".to_string());
+                        }
                     }
-                }
+                    None => return Token::new(TT::Greater, ">".to_string()),
+                },
                 ';' => return Token::new(TT::Semicolon, format!("{}", ch)),
                 _ => {
                     if self.is_letter(Some(ch)) {
